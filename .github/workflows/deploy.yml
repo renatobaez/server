@@ -1,0 +1,30 @@
+name: Deploy Server InnovaClass SSH y PM2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Despliegue con SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            echo "Conectando al servidor..."
+            cd server
+            git pull
+            npm install
+            pm2 restart server || pm2 start index.js --name server
+            pm2 save
+            echo "Despliegue completado."
